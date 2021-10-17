@@ -1,0 +1,77 @@
+linters:
+  enable:    
+    - govet
+    - gofmt
+    - revive
+    - goimports
+    - unparam
+    - unconvert    
+    - megacheck
+    - staticcheck
+    - unused
+    - gosimple
+    - dupl
+    - goconst
+    - gocyclo
+    # - nakedret
+    - exportloopref
+    - gocritic
+    - misspell
+    - asciicheck
+    - bodyclose
+    - cyclop
+    - depguard
+    - dogsled    
+    - durationcheck
+    - errorlint
+    - exhaustive
+    # - exhaustivestruct    
+    - forbidigo
+    - forcetypeassert
+    - funlen
+    - gochecknoglobals
+    - gocognit
+    - goconst    
+    - goerr113
+    - gomnd
+    - goprintffuncname
+    - gosec
+    - lll
+    - makezero
+    - misspell    
+    - nestif    
+    - nilerr
+    - noctx
+    - prealloc
+    - predeclared
+    - sqlclosecheck
+    - unconvert
+    - unparam
+    - wastedassign
+    - wrapcheck
+    - wsl    
+#     # - godot # Check if comments end in a period [fast # true, auto-fix # true]
+#     # - godox # Tool for detection of FIXME, TODO and other comment keywords [fast # true, auto-fix # false]            
+    - ifshort # Checks that your code uses short syntax for if-statements whenever possible [fast # true, auto-fix # false]
+    - importas # Enforces consistent import aliases [fast # false, auto-fix # false]    
+#     # - paralleltest # paralleltest detects missing usage of t.Parallel() method in your Go test [fast # true, auto-fix # false]    
+    - rowserrcheck # checks whether Err of rows is checked successfully [fast # false, auto-fix # false]        
+#     # - tagliatelle # Checks the struct tags. [fast # true, auto-fix # false]
+#     # - testpackage # linter that makes you use a separate _test package [fast # true, auto-fix # false]
+    - thelper # thelper detects golang test helpers without t.Helper() call and checks the consistency of test helpers [fast # false, auto-fix # false]
+    - tparallel # tparallel detects inappropriate usage of t.Parallel() method in your Go test codes [fast # false, auto-fix # false]    
+    - whitespace # Tool for detection of leading and trailing whitespace [fast # true, auto-fix # true]
+linters-settings:  
+  govet:
+    check-shadowing: true    
+    enable:
+      - fieldalignment  
+  staticcheck:
+    # Select the Go version to target. The default is '1.13'.
+    go: "1.17"
+    # https://staticcheck.io/docs/options#checks
+    checks: ["all"]
+  lll:
+    # max line length, lines longer will be reported. Default is 120.
+    # '\t' is counted as 1 character by default, and can be changed with the tab-width option
+    line-length: 170
