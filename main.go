@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/KnBrBz/natsrequest/cnst"
 	"github.com/KnBrBz/natsrequest/destination"
@@ -22,7 +23,12 @@ func natsConn() *nats.Conn {
 	user := os.Getenv("NATS_USER")
 	password := os.Getenv("NATS_PASSWORD")
 
-	nc, err := nats.Connect(url, nats.UserInfo(user, password))
+	options := make([]nats.Option, 0)
+	if len(user) > 0 {
+		options = append(options, nats.UserInfo(user, password))
+	}
+
+	nc, err := nats.Connect(url, options...)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -81,6 +87,8 @@ func main() {
 			source.Run()
 			sources = append(sources, source)
 		}
+
+		time.Sleep(time.Millisecond * 500)
 
 		for _, source := range sources {
 			wg.Add(1)
