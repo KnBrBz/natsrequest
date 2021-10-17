@@ -1,2 +1,1 @@
-# natsrequest
-Nats request timeout snippet
+# Nats request timeout snippet
