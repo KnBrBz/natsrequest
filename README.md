@@ -4,7 +4,7 @@
 
 Program fails with message like `Source.NNNN.N request: *Request.Publish: nats: timeout`.
 
-Number of iteraction that succeeds may vary.
+Number of iterations that succeeds may vary.
 
 ## Program structure
 
