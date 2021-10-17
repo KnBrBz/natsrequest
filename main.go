@@ -28,6 +28,10 @@ func natsConn() *nats.Conn {
 		options = append(options, nats.UserInfo(user, password))
 	}
 
+	options = append(options, nats.ErrorHandler(func(_ *nats.Conn, sub *nats.Subscription, err error) {
+		log.Printf("ErrorHandler Sub %s Error: %v", sub.Subject, err)
+	}))
+
 	nc, err := nats.Connect(url, options...)
 	if err != nil {
 		log.Fatal(err)
@@ -63,6 +67,10 @@ func main() {
 	events := events.NewEvents(subjects, ncEvent)
 	events.Run()
 
+	run(subjects, ncSrc, necDst)
+}
+
+func run(subjects []string, ncSrc *nats.Conn, necDst *nats.EncodedConn) {
 	var (
 		wg       sync.WaitGroup
 		sourceID int

@@ -43,6 +43,10 @@ func (dst *Destination) run() {
 func (dst *Destination) runEvents() {
 	events := dst.ans.Events()
 	for event := range events {
+		if len(events) == cap(events) {
+			log.Fatalf("Channel is full on event %s", event)
+		}
+
 		processEvent(event)
 	}
 }
