@@ -13,15 +13,17 @@ const packageTitle = "answer: "
 type Answer struct {
 	events chan []byte
 
-	nc *nats.Conn
+	nc    *nats.Conn
+	ncReq *nats.Conn
 
 	subs []*nats.Subscription
 }
 
-func New(nc *nats.Conn) *Answer {
+func New(nc, ncReq *nats.Conn) *Answer {
 	return &Answer{
 		subs:   make([]*nats.Subscription, 0),
 		nc:     nc,
+		ncReq:  ncReq,
 		events: make(chan []byte, 1000),
 	}
 }
@@ -50,7 +52,7 @@ func (ans *Answer) SubscribeEvents(subjects []string) {
 func (ans *Answer) Subscribe(request string, eventHandler func(subj, reply string, msg []byte) []byte) error {
 	const funcTitle = packageTitle + "*Answer.Subscribe"
 
-	conn := ans.nc
+	conn := ans.ncReq
 
 	sub, err := conn.Subscribe(request, func(m *nats.Msg) {
 		if v := eventHandler(m.Subject, m.Reply, m.Data); v != nil {
@@ -72,7 +74,7 @@ func (ans *Answer) Subscribe(request string, eventHandler func(subj, reply strin
 func (ans *Answer) Publish(reply string, data []byte) {
 	const funcTitle = packageTitle + "*Answer.Publish"
 
-	conn := ans.nc
+	conn := ans.ncReq
 	if pubErr := conn.Publish(reply, data); pubErr != nil {
 		log.Fatalf("%s reply %s data %s", funcTitle, reply, data)
 	}
