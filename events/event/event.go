@@ -40,7 +40,7 @@ func (e *Event) run() {
 
 		msg := e.subject + "." + strconv.Itoa(i)
 		if err := e.nc.Publish(e.subject, []byte(msg)); err != nil {
-			log.Fatalf("%s subject %s message %s", funcTitle, e.subject, msg) // nolint:gocritic
+			log.Fatalf("%s subject %s message %s: %v", funcTitle, e.subject, msg, err) // nolint:gocritic
 		}
 
 		<-ticker.C
