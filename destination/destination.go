@@ -42,9 +42,18 @@ func (dst *Destination) run() {
 
 func (dst *Destination) runEvents() {
 	events := dst.ans.Events()
+	capacity := cap(events)
+	halfCapacity := capacity / 2
+
 	for event := range events {
-		if len(events) == cap(events) {
+		length := len(events)
+
+		if len(events) == capacity {
 			log.Fatalf("Channel is full on event %s", event)
+		}
+
+		if length >= halfCapacity {
+			log.Printf("Channel is half full on event %s\n", event)
 		}
 
 		processEvent(event)
@@ -62,7 +71,7 @@ func (dst *Destination) SubscribeToEvents(subjects []string) {
 func (dst *Destination) Subscribe(request string) {
 	const funcTitle = packageTitle + "*Destination.Subscribe"
 
-	eventHandler := func(subj, reply string, msg []byte) interface{} {
+	eventHandler := func(subj, reply string, msg []byte) []byte {
 		dst.msg <- Msg{
 			reply: reply,
 			data:  msg,

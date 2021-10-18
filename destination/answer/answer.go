@@ -13,15 +13,15 @@ const packageTitle = "answer: "
 type Answer struct {
 	events chan []byte
 
-	nec *nats.EncodedConn
+	nc *nats.Conn
 
 	subs []*nats.Subscription
 }
 
-func New(nec *nats.EncodedConn) *Answer {
+func New(nc *nats.Conn) *Answer {
 	return &Answer{
 		subs:   make([]*nats.Subscription, 0),
-		nec:    nec,
+		nc:     nc,
 		events: make(chan []byte, 1000),
 	}
 }
@@ -33,10 +33,12 @@ func (ans *Answer) Events() <-chan []byte {
 func (ans *Answer) SubscribeEvents(subjects []string) {
 	const funcTitle = packageTitle + ""
 
-	conn := ans.nec
+	conn := ans.nc
 
 	for _, subject := range subjects {
-		sub, err := conn.BindRecvChan(subject, ans.events)
+		sub, err := conn.Subscribe(subject, func(m *nats.Msg) {
+			ans.events <- m.Data
+		})
 		if err != nil {
 			log.Fatal(errors.Wrapf(err, "%s subject", funcTitle))
 		}
@@ -45,20 +47,19 @@ func (ans *Answer) SubscribeEvents(subjects []string) {
 	}
 }
 
-func (ans *Answer) Subscribe(request string, eventHandler func(subj, reply string, msg []byte) interface{}) error {
+func (ans *Answer) Subscribe(request string, eventHandler func(subj, reply string, msg []byte) []byte) error {
 	const funcTitle = packageTitle + "*Answer.Subscribe"
 
-	conn := ans.nec
+	conn := ans.nc
 
-	sub, err := conn.Subscribe(request, func(subj, reply string, msg []byte) {
-		// log.Printf("Incoming Request: subj `%s` reply `%s` msg `%s`\n", subj, reply, msg)
-		if v := eventHandler(subj, reply, msg); v != nil {
-			if pubErr := conn.Publish(reply, v); pubErr != nil {
+	sub, err := conn.Subscribe(request, func(m *nats.Msg) {
+		if v := eventHandler(m.Subject, m.Reply, m.Data); v != nil {
+			if pubErr := m.Respond(v); pubErr != nil {
 				log.Fatal(errors.Wrap(pubErr, funcTitle))
 			}
 		}
-		// log.Printf("Complete Request: subj `%s` reply `%s`\n", subj, reply)
 	})
+
 	if err != nil {
 		return errors.Wrap(err, funcTitle)
 	}
@@ -71,7 +72,7 @@ func (ans *Answer) Subscribe(request string, eventHandler func(subj, reply strin
 func (ans *Answer) Publish(reply string, data []byte) {
 	const funcTitle = packageTitle + "*Answer.Publish"
 
-	conn := ans.nec
+	conn := ans.nc
 	if pubErr := conn.Publish(reply, data); pubErr != nil {
 		log.Fatalf("%s reply %s data %s", funcTitle, reply, data)
 	}
