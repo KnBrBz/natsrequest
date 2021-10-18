@@ -53,6 +53,9 @@ func main() {
 	ncDst := natsConn()
 	defer ncDst.Close()
 
+	ncReq := natsConn()
+	defer ncReq.Close()
+
 	ncEvent := natsConn()
 	defer ncEvent.Close()
 
@@ -61,10 +64,10 @@ func main() {
 	events := events.NewEvents(subjects, ncEvent)
 	events.Run()
 
-	run(subjects, ncSrc, ncDst)
+	run(subjects, ncSrc, ncDst, ncReq)
 }
 
-func run(subjects []string, ncSrc *nats.Conn, ncDst *nats.Conn) {
+func run(subjects []string, ncSrc *nats.Conn, ncDst, ncReq *nats.Conn) {
 	var (
 		wg       sync.WaitGroup
 		sourceID int
@@ -79,7 +82,7 @@ func run(subjects []string, ncSrc *nats.Conn, ncDst *nats.Conn) {
 		for k := 0; k < 200; k++ {
 			sourceID++
 
-			destination := destination.New(answer.New(ncDst))
+			destination := destination.New(answer.New(ncDst, ncReq))
 			destination.Run()
 			destination.Subscribe(cnst.SourceTitle + strconv.Itoa(sourceID))
 			destination.SubscribeToEvents(subjects)
