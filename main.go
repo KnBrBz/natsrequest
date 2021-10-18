@@ -29,7 +29,7 @@ func natsConn() *nats.Conn {
 	}
 
 	options = append(options, nats.ErrorHandler(func(_ *nats.Conn, sub *nats.Subscription, err error) {
-		log.Printf("ErrorHandler Sub %s Error: %v", sub.Subject, err)
+		log.Fatalf("ErrorHandler Sub %s Error: %v", sub.Subject, err)
 	}))
 
 	nc, err := nats.Connect(url, options...)
@@ -53,12 +53,6 @@ func main() {
 	ncDst := natsConn()
 	defer ncDst.Close()
 
-	necDst, err := nats.NewEncodedConn(ncDst, nats.DEFAULT_ENCODER)
-	if err != nil {
-		log.Fatal(err) // nolint:gocritic
-	}
-	defer necDst.Close()
-
 	ncEvent := natsConn()
 	defer ncEvent.Close()
 
@@ -67,10 +61,10 @@ func main() {
 	events := events.NewEvents(subjects, ncEvent)
 	events.Run()
 
-	run(subjects, ncSrc, necDst)
+	run(subjects, ncSrc, ncDst)
 }
 
-func run(subjects []string, ncSrc *nats.Conn, necDst *nats.EncodedConn) {
+func run(subjects []string, ncSrc *nats.Conn, ncDst *nats.Conn) {
 	var (
 		wg       sync.WaitGroup
 		sourceID int
@@ -85,7 +79,7 @@ func run(subjects []string, ncSrc *nats.Conn, necDst *nats.EncodedConn) {
 		for k := 0; k < 200; k++ {
 			sourceID++
 
-			destination := destination.New(answer.New(necDst))
+			destination := destination.New(answer.New(ncDst))
 			destination.Run()
 			destination.Subscribe(cnst.SourceTitle + strconv.Itoa(sourceID))
 			destination.SubscribeToEvents(subjects)
