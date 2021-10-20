@@ -1,5 +1,7 @@
 # Nats request timeout snippet
 
+Was created for resolving the issue https://github.com/nats-io/nats.go/issues/852
+
 ## Problem
 
 Program fails with message like `Source.NNNN.N request: *Request.Publish: nats: timeout`.
